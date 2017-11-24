@@ -1,5 +1,7 @@
+import sys
+
 from GameOfLife import GameOfLife
-from MainWindow import *
+from MainWindow import MainWindow
 from GolLoop import GolLoop
 
 from PyQt5.QtWidgets import QApplication
@@ -12,7 +14,7 @@ except ImportError:
 
 
 if __name__ == '__main__':
-    gol = GameOfLife(150, 200, mode='random')
+    gol = GameOfLife(100, 150, 'random')
 
     timer = GolLoop()
     timer.timeout.connect(gol.next)

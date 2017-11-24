@@ -1,16 +1,19 @@
 import sys
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QSlider, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QMessageBox)
+from PyQt5.QtWidgets import (QSlider, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QMessageBox,
+                             QSizePolicy)
 from PyQt5.QtGui import QImage, qRgb, QPixmap
 
 import numpy as np
 
+from GolViewer import GolViewer
 
 class PlayPauseButton(QPushButton):
     def __init__(self):
         super().__init__()
 
+        self.setFixedWidth(100)
         self.btn_text = ["  Play  ", "Pause"]
         self.i = 0
 
@@ -32,8 +35,11 @@ class MainWindow(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        self.l = QLabel()
-        self.l.resize(200,200)
+        self.setWindowTitle("Game of Life")
+
+        self.viewer = GolViewer()
+        # self.viewer = QLabel()
+        self.viewer.resize(800, 600)
 
         self.play_pause = PlayPauseButton()
 
@@ -64,12 +70,10 @@ class MainWindow(QWidget):
         h_box.addWidget(self.save)
 
         v_box = QVBoxLayout()
-        v_box.addWidget(self.l)
+        v_box.addWidget(self.viewer)
         v_box.addLayout(h_box)
 
         self.setLayout(v_box)
-
-        self.setWindowTitle("Game of Life")
 
         self.play_pause.clicked.connect(self.play_pause_clicked)
         self.reset.clicked.connect(self.reset_clicked)
@@ -77,10 +81,9 @@ class MainWindow(QWidget):
         self.load.clicked.connect(self.load_clicked)
         self.save.clicked.connect(self.save_clicked)
 
+        self.setMinimumSize(600, 400)
         self.updateView()
-        self.setFixedSize(self.size())
         self.show()
-
 
     def play_pause_clicked(self):
         self.timer.play_pause()
@@ -93,7 +96,6 @@ class MainWindow(QWidget):
         self.updateView()
 
     def slider_changed(self):
-        print('slider changed: ' + str(self.slider.value()))
         speed = 1010 - self.slider.value()
         self.timer.set_speed(speed)
 
@@ -104,7 +106,7 @@ class MainWindow(QWidget):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
-                                                  "All Files (*);;PNG Save File (*.png);;Txt Save File (*.txt)", options=options)
+                                                  "All Files (*);;PNG Save File (*.png);;TXT Save File (*.txt)", options=options)
         if fileName:
             if self.gol.load(fileName) is False:
                 QMessageBox.about(self, "File Error", "File selected is not valid")
@@ -132,8 +134,7 @@ class MainWindow(QWidget):
         mat = np.require(mat, np.uint8, 'C')
         qim = self.toQImage(mat)
         qpix = QPixmap.fromImage(qim)
-        self.l.setPixmap(qpix.scaled(600, 800, Qt.KeepAspectRatio, Qt.FastTransformation))
-
+        self.viewer.setPixmap(qpix.scaled(self.viewer.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
 
     def toQImage(self, im, copy=False):
         gray_color_table = [qRgb(i, i, i) for i in range(256)]
@@ -150,3 +151,7 @@ class MainWindow(QWidget):
             elif im.shape[2] == 4:
                 qim = QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_ARGB32);
                 return qim.copy() if copy else qim
+
+    def resizeEvent(self, ev):
+        self.updateView()
+        super().resizeEvent(ev)

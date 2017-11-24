@@ -20,6 +20,7 @@ class GolLoop(QTimer):
         self.currentTimer = speed
 
     def play_pause(self):
+        self.stop()
         self.going = not self.going
         if self.going is True:
             self.setSingleShot(True)

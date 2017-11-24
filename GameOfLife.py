@@ -3,10 +3,18 @@ from scipy import ndimage
 from PIL import Image
 import os
 
+
 PIXEL_MAX = 255
+
 
 class GameOfLife:
     def __init__(self, x, y, mode='empty'):
+        self.reinitialize(x, y, mode)
+
+    def reset(self):
+        self.mat = np.copy(self.initial_state)
+
+    def reinitialize(self, x, y, mode='empty'):
         self.mode = mode
         self.x = x
         self.y = y
@@ -17,20 +25,11 @@ class GameOfLife:
             self.mat[indexes_p] = PIXEL_MAX
         self.initial_state = np.copy(self.mat)
 
-    def reset(self):
-        self.mat = np.copy(self.initial_state)
-
-    def reinitialize(self, x, y, state='empty'):
-        self.mode = state
-        self.x = x
-        self.y = y
-        self.reset()
-
-    def load(self, fileName):
+    def load(self, file_name):
         # check if txt or png and proceed accordingly
-        extension = os.path.splitext(fileName)[1][1:]
+        extension = os.path.splitext(file_name)[1][1:]
         if extension == "png":
-            im_frame = Image.open(fileName).convert('L')
+            im_frame = Image.open(file_name).convert('L')
             width, height = im_frame.size
             self.x = height
             self.y = width
@@ -42,7 +41,7 @@ class GameOfLife:
             return True
         elif extension == "txt":
             print('txt')
-            with open(fileName) as f:
+            with open(file_name) as f:
                 for i, l in enumerate(f):
                     pass
             rows = i + 1
@@ -50,7 +49,7 @@ class GameOfLife:
 
             self.mat = np.zeros((rows, cols), dtype=np.uint8)
 
-            with open(fileName) as f:
+            with open(file_name) as f:
                 for j, line in enumerate(f):
                     for k, c in enumerate(line):
                         if c == "X":
@@ -65,13 +64,13 @@ class GameOfLife:
             print('Wrong file type')
             return False
 
-    def save(self, fileName):
+    def save(self, file_name):
         # save as png
-        extension = os.path.splitext(fileName)[1][1:]
+        extension = os.path.splitext(file_name)[1][1:]
         if extension == "png":
-            path = fileName
+            path = file_name
         else:
-            path = fileName + ".png"
+            path = file_name + ".png"
 
         im = Image.fromarray(self.mat)
         im.save(path)
@@ -81,7 +80,7 @@ class GameOfLife:
         self.initial_state = np.copy(self.mat)
 
     def next(self):
-        res = ndimage.uniform_filter(self.mat, size=3)
+        res = ndimage.uniform_filter(self.mat, size=3, mode='constant', cval=0)
         res[self.mat > 128] = res[self.mat > 128] - int((1/9)*PIXEL_MAX)
         self.mat[res <= int((1/9)*PIXEL_MAX)] = 0
         self.mat[res >= int((4/9)*PIXEL_MAX)] = 0
