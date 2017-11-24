@@ -10,20 +10,26 @@ PIXEL_MAX = 255
 class GameOfLife:
     def __init__(self, x, y, mode='empty'):
         self.reinitialize(x, y, mode)
+        self.do_heatmap = False
+
+    def set_do_heatmap(self, b):
+        self.do_heatmap = b
 
     def reset(self):
         self.mat = np.copy(self.initial_state)
+        self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
 
     def reinitialize(self, x, y, mode='empty'):
         self.mode = mode
         self.x = x
         self.y = y
         self.mat = np.zeros((self.x, self.y), dtype=np.uint8)
-        if self.mode == "random":
+        if self.mode == "random": # redo it better
             rand_m = np.random.randn(self.x, self.y) - 0.5  # less white cells than black voids
             indexes_p = rand_m > 0
             self.mat[indexes_p] = PIXEL_MAX
         self.initial_state = np.copy(self.mat)
+        self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
 
     def load(self, file_name):
         # check if txt or png and proceed accordingly
@@ -38,6 +44,7 @@ class GameOfLife:
             self.mat = np.zeros(np_frame.shape, dtype=np.uint8)
             self.mat[np_frame > 128] = PIXEL_MAX
             self.initial_state = np.copy(self.mat)
+            self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
             return True
         elif extension == "txt":
             print('txt')
@@ -59,6 +66,7 @@ class GameOfLife:
             self.y = cols
 
             self.initial_state = np.copy(self.mat)
+            self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
             return True
         else:
             print('Wrong file type')
@@ -78,6 +86,7 @@ class GameOfLife:
     def set_model(self, new_mat):
         self.mat = new_mat
         self.initial_state = np.copy(self.mat)
+        self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
 
     def next(self):
         res = ndimage.uniform_filter(self.mat, size=3, mode='constant', cval=0)
@@ -85,9 +94,14 @@ class GameOfLife:
         self.mat[res <= int((1/9)*PIXEL_MAX)] = 0
         self.mat[res >= int((4/9)*PIXEL_MAX)] = 0
         self.mat[res == int((3/9)*PIXEL_MAX)] = PIXEL_MAX
+        #self.heatmap =  # something to do exponential decay...   <---------------------
 
     def get_state(self):
-        return self.mat
+        if self.do_heatmap:
+            return self.heatmap
+        else:
+            return self.mat
 
-
+    def set_pixel(self, i, j):
+        self.mat[i, j] = PIXEL_MAX
 

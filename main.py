@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication
 
 qdark_present = True
 try:
-    import qdarkstyle # Qt styling package
+    import qdarkstyle  # Qt styling package
 except ImportError:
     qdark_present = False
 
