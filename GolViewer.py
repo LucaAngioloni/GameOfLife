@@ -1,6 +1,8 @@
 from PyQt5.QtGui import QImage, qRgb, QPixmap, QPainter, QPen
 from PyQt5.QtCore import (Qt, QSize, QPoint)
 from PyQt5.QtWidgets import (QSlider, QLabel, QWidget, QScrollArea, QSizePolicy)
+import PyQt5.QtCore
+from timeit import default_timer as timer
 
 import numpy as np
 
@@ -15,6 +17,7 @@ class GolViewer(QLabel):
         self.H_margin = 0
         self.h = 0
         self.w = 0
+        self.lastUpdate = timer()
 
     def set_model(self, gol):
         self.gol = gol
@@ -29,6 +32,7 @@ class GolViewer(QLabel):
         self.setPixmap(qpix.scaled(self.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
         self.V_margin = (self.size().height() - self.pixmap().size().height())/2
         self.H_margin = (self.size().width() - self.pixmap().size().width())/2
+        self.lastUpdate = timer()
 
 
     def toQImage(self, im, copy=False):
@@ -53,24 +57,43 @@ class GolViewer(QLabel):
             i = event.pos().y() - self.V_margin
             j = event.pos().x() - self.H_margin
             if i > 0 and j > 0 and i < self.pixmap().height() and j < self.pixmap().width():
-                print("click pos i: " + str(i) + ", j: " + str(j))
                 i = int(i * self.h / self.pixmap().height())
                 j = int(j * self.w / self.pixmap().width())
-                self.gol.set_pixel(i, j)
+                self.gol.set_active_cell(i, j)
+                self.updateView()
+        if event.button() == Qt.RightButton:
+            self.drawing = True
+            i = event.pos().y() - self.V_margin
+            j = event.pos().x() - self.H_margin
+            if i > 0 and j > 0 and i < self.pixmap().height() and j < self.pixmap().width():
+                i = int(i * self.h / self.pixmap().height())
+                j = int(j * self.w / self.pixmap().width())
+                self.gol.set_inactive_cell(i, j)
                 self.updateView()
 
 
     def mouseMoveEvent(self, event):
-        if (event.buttons() & Qt.LeftButton) & self.drawing:
+        if event.buttons() == Qt.LeftButton and self.drawing:
             i = event.pos().y() - self.V_margin
             j = event.pos().x() - self.H_margin
             if i > 0 and j > 0 and i < self.pixmap().height() and j < self.pixmap().width():
-                print("move pos i: " + str(i) + ", j: " + str(j))
                 i = int(i * self.h / self.pixmap().height())
                 j = int(j * self.w / self.pixmap().width())
-                self.gol.set_pixel(i, j)
-                self.updateView()
+                self.gol.set_active_cell(i, j)
+                if (timer() - self.lastUpdate) > 0.04:
+                    self.updateView()
+        if event.buttons() == Qt.RightButton and self.drawing:
+            i = event.pos().y() - self.V_margin
+            j = event.pos().x() - self.H_margin
+            if i > 0 and j > 0 and i < self.pixmap().height() and j < self.pixmap().width():
+                i = int(i * self.h / self.pixmap().height())
+                j = int(j * self.w / self.pixmap().width())
+                self.gol.set_inactive_cell(i, j)
+                if (timer() - self.lastUpdate) > 0.04:
+                    self.updateView()
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton and self.drawing:
+            self.drawing = False
+        if event.button() == Qt.RightButton and self.drawing:
             self.drawing = False

@@ -14,7 +14,7 @@ except ImportError:
 
 
 if __name__ == '__main__':
-    gol = GameOfLife(100, 150, 'random')
+    gol = GameOfLife()
 
     timer = GolLoop()
     timer.timeout.connect(gol.next)

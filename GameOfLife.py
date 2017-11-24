@@ -5,11 +5,11 @@ import os
 
 
 PIXEL_MAX = 255
-
+DECAY = 0.9
 
 class GameOfLife:
-    def __init__(self, x, y, mode='empty'):
-        self.reinitialize(x, y, mode)
+    def __init__(self, x=100, y=150, mode='empty'):
+        self.reinitialize(mode, x, y)
         self.do_heatmap = False
 
     def set_do_heatmap(self, b):
@@ -17,19 +17,19 @@ class GameOfLife:
 
     def reset(self):
         self.mat = np.copy(self.initial_state)
-        self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
+        self.heatmap = np.copy(self.mat)
 
-    def reinitialize(self, x, y, mode='empty'):
+    def reinitialize(self, mode='empty', x=100, y=150):
         self.mode = mode
         self.x = x
         self.y = y
         self.mat = np.zeros((self.x, self.y), dtype=np.uint8)
-        if self.mode == "random": # redo it better
+        if self.mode == 'random': # redo it better
             rand_m = np.random.randn(self.x, self.y) - 0.5  # less white cells than black voids
             indexes_p = rand_m > 0
             self.mat[indexes_p] = PIXEL_MAX
         self.initial_state = np.copy(self.mat)
-        self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
+        self.heatmap = np.copy(self.mat)
 
     def load(self, file_name):
         # check if txt or png and proceed accordingly
@@ -44,10 +44,9 @@ class GameOfLife:
             self.mat = np.zeros(np_frame.shape, dtype=np.uint8)
             self.mat[np_frame > 128] = PIXEL_MAX
             self.initial_state = np.copy(self.mat)
-            self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
+            self.heatmap = np.copy(self.mat)
             return True
         elif extension == "txt":
-            print('txt')
             with open(file_name) as f:
                 for i, l in enumerate(f):
                     pass
@@ -66,7 +65,7 @@ class GameOfLife:
             self.y = cols
 
             self.initial_state = np.copy(self.mat)
-            self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
+            self.heatmap = np.copy(self.mat)
             return True
         else:
             print('Wrong file type')
@@ -86,7 +85,7 @@ class GameOfLife:
     def set_model(self, new_mat):
         self.mat = new_mat
         self.initial_state = np.copy(self.mat)
-        self.heatmap = np.zeros(self.mat.shape, dtype=np.uint8)
+        self.heatmap = np.copy(self.mat)
 
     def next(self):
         res = ndimage.uniform_filter(self.mat, size=3, mode='constant', cval=0)
@@ -94,7 +93,8 @@ class GameOfLife:
         self.mat[res <= int((1/9)*PIXEL_MAX)] = 0
         self.mat[res >= int((4/9)*PIXEL_MAX)] = 0
         self.mat[res == int((3/9)*PIXEL_MAX)] = PIXEL_MAX
-        #self.heatmap =  # something to do exponential decay...   <---------------------
+        self.heatmap = np.array(self.heatmap * DECAY, dtype=np.uint8)
+        self.heatmap[self.mat > 128] = PIXEL_MAX
 
     def get_state(self):
         if self.do_heatmap:
@@ -102,6 +102,10 @@ class GameOfLife:
         else:
             return self.mat
 
-    def set_pixel(self, i, j):
+    def set_active_cell(self, i, j):
         self.mat[i, j] = PIXEL_MAX
+        self.heatmap[i, j] = PIXEL_MAX
 
+    def set_inactive_cell(self, i, j):
+        self.mat[i, j] = 0
+        self.heatmap[i, j] = 0
