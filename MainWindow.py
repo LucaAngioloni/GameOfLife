@@ -1,11 +1,7 @@
 import sys
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QSlider, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QMessageBox,
-                             QSizePolicy)
-from PyQt5.QtGui import QImage, qRgb, QPixmap
-
-import numpy as np
+from PyQt5.QtWidgets import (QSlider, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QMessageBox)
 
 from GolViewer import GolViewer
 
@@ -31,7 +27,6 @@ class MainWindow(QWidget):
 
         self.gol = gol
         self.timer = timer
-        self.timer.timeout.connect(self.updateView)
         self.init_ui()
 
     def init_ui(self):
@@ -40,6 +35,9 @@ class MainWindow(QWidget):
         self.viewer = GolViewer()
         # self.viewer = QLabel()
         self.viewer.resize(800, 600)
+        self.viewer.set_model(self.gol)
+
+        self.timer.timeout.connect(self.viewer.updateView)
 
         self.play_pause = PlayPauseButton()
 
@@ -82,7 +80,7 @@ class MainWindow(QWidget):
         self.save.clicked.connect(self.save_clicked)
 
         self.setMinimumSize(600, 400)
-        self.updateView()
+        self.viewer.updateView()
         self.show()
 
     def play_pause_clicked(self):
@@ -93,7 +91,7 @@ class MainWindow(QWidget):
             self.timer.play_pause()
             self.play_pause.changeText()
         self.gol.reset()
-        self.updateView()
+        self.viewer.updateView()
 
     def slider_changed(self):
         speed = 1010 - self.slider.value()
@@ -113,7 +111,7 @@ class MainWindow(QWidget):
         else:
             QMessageBox.about(self, "File Name Error", "No file name selected")
 
-        self.updateView()
+        self.viewer.updateView()
 
     def save_clicked(self):
         if self.timer.is_going():
@@ -128,30 +126,6 @@ class MainWindow(QWidget):
         else:
             QMessageBox.about(self, "File Name Error", "No file name selected")
 
-
-    def updateView(self):
-        mat = self.gol.get_state()
-        mat = np.require(mat, np.uint8, 'C')
-        qim = self.toQImage(mat)
-        qpix = QPixmap.fromImage(qim)
-        self.viewer.setPixmap(qpix.scaled(self.viewer.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
-
-    def toQImage(self, im, copy=False):
-        gray_color_table = [qRgb(i, i, i) for i in range(256)]
-        if im is None:
-            return QImage()
-        if len(im.shape) == 2:
-            qim = QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_Indexed8)
-            qim.setColorTable(gray_color_table)
-            return qim.copy() if copy else qim
-        elif len(im.shape) == 3:  # maybe in the future accept color images
-            if im.shape[2] == 3:
-                qim = QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_RGB888);
-                return qim.copy() if copy else qim
-            elif im.shape[2] == 4:
-                qim = QImage(im.data, im.shape[1], im.shape[0], im.strides[0], QImage.Format_ARGB32);
-                return qim.copy() if copy else qim
-
     def resizeEvent(self, ev):
-        self.updateView()
+        self.viewer.updateView()
         super().resizeEvent(ev)
