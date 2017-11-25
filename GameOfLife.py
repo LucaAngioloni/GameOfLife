@@ -117,19 +117,26 @@ class GameOfLife:
             self.heatmap = np.copy(self.mat)
             return True
         elif extension == "txt":
+            rows = 0
+            cols = 0
             with open(file_name) as f:
                 for i, l in enumerate(f):
-                    pass
-            rows = i + 1
-            cols = len(l)
+                    if l[0] != "#":
+                        rows += 1
+                        if len(l) > cols:
+                            cols = len(l)
 
             self.mat = np.zeros((rows, cols), dtype=np.uint8)
 
+            hash_rows = 0
             with open(file_name) as f:
                 for j, line in enumerate(f):
                     for k, c in enumerate(line):
-                        if c == "X":
-                            self.mat[j, k] = PIXEL_MAX
+                        if c == "#" and k is 0:
+                            hash_rows += 1
+                            break
+                        elif c != "." and c != "\n":
+                            self.mat[j-hash_rows, k] = PIXEL_MAX
 
             self.x = rows
             self.y = cols
