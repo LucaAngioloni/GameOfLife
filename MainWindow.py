@@ -1,54 +1,38 @@
-import sys
-import os
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QSlider, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QMessageBox,
-                             QComboBox, QCheckBox)
+                             QCheckBox)
 
 from GolViewer import GolViewer
+from MyWidgets import PatternMenu, PlayPauseButton
 
-class PatternMenu(QComboBox):
-    def __init__(self):
-        super().__init__()
-        self.setFixedWidth(250)
-        self.path_to_patterns = os.path.abspath(os.path.dirname(sys.argv[0])) + "/patterns/"
-        self.files = sorted([f for f in os.listdir(self.path_to_patterns) if not f.startswith('.')], key=lambda f: f.lower())
-        self.addItem("Empty")
-        self.addItem("Random")
-        self.addItems(self.files)
-
-class PlayPauseButton(QPushButton):
-    def __init__(self):
-        super().__init__()
-
-        self.setFixedWidth(100)
-        self.btn_text = ["  Play  ", "Pause"]
-        self.i = 0
-
-        self.setText(self.btn_text[self.i])
-
-        self.clicked.connect(self.changeText)
-
-    def changeText(self):
-        self.i += 1
-        self.setText(self.btn_text[self.i % 2])
 
 class MainWindow(QWidget):
-    def __init__(self, gol, timer):
+    """
+    Main window controller
+
+    Attributes:
+        gol         reference to an object of class GameOfLife (the model)
+        loop        reference to an object of class GolLoop (the main loop of the game)
+        viewer      custom widget to show the Game of Life model
+        ...some graphical elements
+    """
+
+    def __init__(self, gol, loop):
         super().__init__()
 
         self.gol = gol
-        self.timer = timer
+        self.loop = loop
         self.init_ui()
 
     def init_ui(self):
+        """Method to initialize the UI: layouts and components"""
         self.setWindowTitle("Game of Life")
 
         self.viewer = GolViewer()
         self.viewer.resize(800, 600)
         self.viewer.set_model(self.gol)
 
-        self.timer.timeout.connect(self.viewer.updateView)
+        self.loop.timeout.connect(self.viewer.updateView)
 
         self.play_pause = PlayPauseButton()
 
@@ -68,7 +52,7 @@ class MainWindow(QWidget):
         self.save = QPushButton()
         self.save.setText("Save")
 
-        self.check_box = QCheckBox("Heatmap(History)")
+        self.check_box = QCheckBox("Heatmap (History)")
         self.check_box.stateChanged.connect(self.check_box_slot)
 
         self.menu_label = QLabel("Known Patterns: ")
@@ -109,38 +93,46 @@ class MainWindow(QWidget):
         self.show()
 
     def play_pause_clicked(self):
-        self.timer.play_pause()
+        """Slot for the play/pause button click event. It starts or pauses the loop"""
+        self.loop.play_pause()
 
     def reset_clicked(self):
-        if self.timer.is_going():
-            self.timer.play_pause()
+        """Slot for the reset button click event. Resets the model, pauses the loop and updates the view"""
+        if self.loop.is_going():
+            self.loop.play_pause()
             self.play_pause.changeText()
         self.gol.reset()
         self.viewer.updateView()
 
     def slider_changed(self):
+        """Slot for the speed slider value changed signal. Changes the loop timeout time based on the speed"""
         speed = 1010 - self.slider.value()
-        self.timer.set_speed(speed)
+        self.loop.set_speed(speed)
 
     def load_clicked(self):
-        if self.timer.is_going():
-            self.timer.play_pause()
+        """Slot for the Load button click event. Opens a dialog to choose a file then signals the model to load it"""
+        if self.loop.is_going():
+            self.loop.play_pause()
             self.play_pause.changeText()
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
-                                                  "All Files (*);;PNG Save File (*.png);;TXT Save File (*.txt)", options=options)
+                                                  "All Files (*);;PNG Save File (*.png);;TXT Save File (*.txt)",
+                                                  options=options)
         if fileName:
             if self.gol.load(fileName) is False:
                 QMessageBox.about(self, "File Error", "File selected is not valid")
+            else:
+                self.menu.addItem("- Custom pattern -")
+                self.menu.setCurrentText("- Custom pattern -")
         else:
             QMessageBox.about(self, "File Name Error", "No file name selected")
-
         self.viewer.updateView()
 
     def save_clicked(self):
-        if self.timer.is_going():
-            self.timer.play_pause()
+        """Slot for the Save button click event. Opens a dialog to choose a file then signals the model to save to it"""
+        if self.loop.is_going():
+            self.loop.play_pause()
             self.play_pause.changeText()
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
@@ -152,10 +144,12 @@ class MainWindow(QWidget):
             QMessageBox.about(self, "File Name Error", "No file name selected")
 
     def resizeEvent(self, ev):
+        """Slot for window resize event (Override)"""
         self.viewer.updateView()
         super().resizeEvent(ev)
 
     def check_box_slot(self, code):
+        """Slot for the Heatmap checkbox changed state signal. Checks the state and updates the model accordingly"""
         if code == Qt.Checked:
             self.gol.set_do_heatmap(True)
         else:
@@ -163,14 +157,18 @@ class MainWindow(QWidget):
         self.viewer.updateView()
 
     def change_pattern(self, text):
-        if self.timer.is_going():
-            self.timer.play_pause()
+        """Slot for the ComboBox changed state signal. Loads the selected known pattern"""
+        if self.loop.is_going():
+            self.loop.play_pause()
             self.play_pause.changeText()
         if text == "Empty":
             self.gol.reinitialize('empty')
         elif text == "Random":
             self.gol.reinitialize('random')
-        else:
-            if self.gol.load(self.menu.path_to_patterns + text) is False:
+        elif text != "- Custom pattern -":
+            last = self.menu.count() - 1
+            if self.menu.itemText(last) == "- Custom pattern -":
+                self.menu.removeItem(last)
+            elif self.gol.load(self.menu.path_to_patterns + text) is False:
                 QMessageBox.about(self, "File Error", "File selected is not valid")
         self.viewer.updateView()

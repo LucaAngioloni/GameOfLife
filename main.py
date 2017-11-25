@@ -1,10 +1,10 @@
 import sys
 
-from GameOfLife import GameOfLife
-from MainWindow import MainWindow
-from GolLoop import GolLoop
-
 from PyQt5.QtWidgets import QApplication
+
+from GameOfLife import GameOfLife
+from GolLoop import GolLoop
+from MainWindow import MainWindow
 
 qdark_present = True
 try:
@@ -12,15 +12,14 @@ try:
 except ImportError:
     qdark_present = False
 
-
 if __name__ == '__main__':
-    gol = GameOfLife()
+    gol = GameOfLife()  # The model
 
-    timer = GolLoop()
+    timer = GolLoop()  # The game loop
     timer.timeout.connect(gol.next)
 
     app = QApplication(sys.argv)
     if qdark_present:
         app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    window = MainWindow(gol, timer)
+    window = MainWindow(gol, timer)  # The view controller / view
     sys.exit(app.exec_())
