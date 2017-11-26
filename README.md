@@ -112,3 +112,6 @@ QDarkStylesheet was used for a better looking GUI (highly recommended) and can b
 
 ## Future developements
 Maybe implement **Pan and Zoom** functionalities with fixed board size (big) not depending on the pattern loaded.
+
+## License
+Licensed under the term of [MIT License](http://en.wikipedia.org/wiki/MIT_License). See attached file LICENSE.
