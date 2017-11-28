@@ -52,7 +52,7 @@ The GUI is composed of a main window (`MainWindow` class) containing some stock 
 #### GolViewer
 This is the custom widget designed to show and edit (with mouse events) the state of the Game of Life.
 
-It can receive as imput 1 channel images (the state of the game or the current heat map) or color (color+alpha) images (maybe for a different representation of the state of the game).
+It can receive as input 1 channel images (the state of the game or the current heat map) or color (color+alpha) images (maybe for a different representation of the state of the game).
 
 Attributes:
 - gol = reference to an object of class GameOfLife (the model)
@@ -60,7 +60,7 @@ Attributes:
 - V_margin = dimension of right and left margin in window (widget) coordinates for the image
 - H_margin = dimension of top and bottom margin in window (widget) coordinates for the image
 - h = board (gol state) height
-- w = board (gol state) height
+- w = board (gol state) width
 - lastUpdate = time of the last view update
 - pixmap = image representing the state of the game (QPixmap object) (self.pixmap())
 
@@ -86,7 +86,7 @@ This can be done also while the simulation is running.
 From the drop down menu at the top, the user can choose between some well known patterns to load and play.
 
 ### Heatmap
-This implementation of Game of Life implements also a Heatmap (History) of the past game states. To visualize it just check the check button at the top right. (example in the picture below)
+This implementation of Game of Life presents also a Heatmap (History) of the past game states. To visualize it just check the check button at the top right. (example in the picture below)
 [![Heatmap.png](https://s2.postimg.org/idyq50b6h/Heatmap.png)](https://postimg.org/image/bni8vko0l/)
 
 ### Save and Load
