@@ -11,7 +11,7 @@ The game is played on a two-dimensional grid (or board). Each grid location is e
 5. All updates are performed simultaneously **in parallel**.
 
 This figure illustrates the rules for cell death, survival, and birth:
-[![Go_LRules.png](https://s2.postimg.org/3vwxjhzp5/Go_LRules.png)](https://postimg.org/image/ra4wvfhmd/)
+![Go_LRules.png](./images/Go_LRules.png)
 
 ## Implementation
 The game was implemnted using Python:
@@ -71,7 +71,7 @@ $ python3 main.py
 ```
 ### Main window
 The Main window presents itself like this:
-[![Gui.png](https://s2.postimg.org/6c3cauu89/Gui.png)](https://postimg.org/image/8tf3i4e4l/)
+![Gui.png](./images/Gui.png)
 
 ### Play/Pause
 The user can play/pause or reset the board using the push buttons at the bottom.
@@ -87,7 +87,7 @@ From the drop down menu at the top, the user can choose between some well known 
 
 ### Heatmap
 This implementation of Game of Life presents also a Heatmap (History) of the past game states. To visualize it just check the check button at the top right. (example in the picture below)
-[![Heatmap.png](https://s2.postimg.org/idyq50b6h/Heatmap.png)](https://postimg.org/image/bni8vko0l/)
+![Heatmap.png](./images/Heatmap.png)
 
 ### Save and Load
 Finally the user can save his own creations and load them using the Load and Save buttons at the bottom right.
@@ -97,7 +97,7 @@ The game states are saved in PNG format (1 channel images \[0 dead cells, 255 li
 
 ### Game demonstration
 
-<img src="https://s1.gifyu.com/images/demonstration.gif" alt="Demonstration Gif" data-load="full">
+<img src="https://github.com/LucaAngioloni/GameOfLife/raw/master/images/Video.gif" alt="Demonstration Gif" data-load="full">
 
 ## Requirements
 | Software       | Verison        | Required |
