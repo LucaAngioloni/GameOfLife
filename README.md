@@ -106,6 +106,7 @@ The game states are saved in PNG format (1 channel images \[0 dead cells, 255 li
 | **PyQt5**      |     >= 5.1     |    Yes   |
 | **Numpy**      |Tested on v1.13 |    Yes   |
 | **Scipy**      |Tested on v1.0.0|    Yes   |
+| **Pillow**     |Tested on v4.3.0|    Yes   |
 | QDarkStylesheet|    >= 2.3.1    | Optional |
 
 QDarkStylesheet was used for a better looking GUI (highly recommended) and can be found in [this GitHub Repo](https://github.com/ColinDuquesnoy/QDarkStyleSheet)
