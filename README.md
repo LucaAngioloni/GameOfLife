@@ -100,7 +100,7 @@ The game states are saved in PNG format (1 channel images \[0 dead cells, 255 li
 <img src="https://github.com/LucaAngioloni/GameOfLife/raw/master/images/Video.gif" alt="Demonstration Gif" data-load="full">
 
 ## Requirements
-| Software       | Verison        | Required |
+| Software       | Version        | Required |
 | -------------- |:--------------:| --------:|
 | **Python**     |     >= 3.5     |    Yes   |
 | **PyQt5**      |     >= 5.1     |    Yes   |
