@@ -1,0 +1,6 @@
+numpy
+Pillow
+scipy
+PyQt5
+# optional
+qdarkstyle
