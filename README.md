@@ -91,7 +91,7 @@ This implementation of Game of Life presents also a Heatmap (History) of the pas
 
 ### Save and Load
 Finally the user can save his own creations and load them using the Load and Save buttons at the bottom right.
-A modal window will popup so that the user can choose where to save or what to load.
+A modal window will pop up so that the user can choose where to save or what to load.
 
 The game states are saved in PNG format (1 channel images \[0 dead cells, 255 living cells\])
 
